@@ -57,7 +57,7 @@ class DBusNMStatus:
 
         gi.repository.GObject.MainLoop().run()
 
-def main()
+def main():
     DBusNMStatus(' '.join(sys.argv[1:])).run()
 
 if __name__ == '__main__':
