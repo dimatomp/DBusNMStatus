@@ -4,7 +4,8 @@ import sys
 from dbus.mainloop.glib import DBusGMainLoop
 
 _NM_BUS = 'org.freedesktop.NetworkManager'
-_NM_WIRELESS_DEVICE = _NM_BUS + ".Device.Wireless"
+_NM_DEVICE = _NM_BUS + ".Device"
+_NM_WIRELESS_DEVICE = _NM_DEVICE + ".Wireless"
 _NM_ACCESS_POINT = _NM_BUS + ".AccessPoint"
 _NM_PATH = '/org/freedesktop/NetworkManager'
 
@@ -47,8 +48,10 @@ class DBusNMStatus:
 
         try:
             manager = dbus.Interface(self.bus.get_object(_NM_BUS, _NM_PATH), _NM_BUS)
-            iface_path = manager.GetDeviceByIpIface('wlo1')
-            iface = dbus.Interface(self.bus.get_object(_NM_BUS, iface_path), dbus.PROPERTIES_IFACE)
+            for obj in manager.GetAllDevices():
+                iface = dbus.Interface(self.bus.get_object(_NM_BUS, obj), dbus.PROPERTIES_IFACE)
+                if iface.Get(_NM_DEVICE, "DeviceType") == 2:
+                    break
             self.refreshAccessPoint(iface.Get(_NM_WIRELESS_DEVICE, 'ActiveAccessPoint'))
         except dbus.DBusException as e:
             print(e)
@@ -58,7 +61,7 @@ class DBusNMStatus:
         gi.repository.GObject.MainLoop().run()
 
 def main():
-    DBusNMStatus(' '.join(sys.argv[1:])).run()
+    DBusNMStatus().run()
 
 if __name__ == '__main__':
     main()
